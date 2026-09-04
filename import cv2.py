@@ -7,6 +7,8 @@ import time
 
 pygame.mixer.init()
 pygame.mixer.music.load("doublechin.mp3")
+slouch_image = cv2.resize(cv2.imread("slouch.jpeg"), (220, 220))
+
 goofyaah_sounds = [
     ("67.mp3", cv2.resize(cv2.imread("67.jpeg"), (220, 220))),
     ("faah.mp3", cv2.resize(cv2.imread("sadge.jpeg"), (220, 220))),
@@ -20,7 +22,7 @@ hands = hand_detect.Hands(max_num_hands=2, min_detection_confidence=0.7)
 pose = mp.solutions.pose
 mp_pose = pose.Pose(min_detection_confidence=0.6, min_tracking_confidence=0.6)
 baseline_nose_y = None
-slouch_threshold = 35
+slouch_threshold = 10
 calibration_end_time = time.time() + 3
 
 last_trigger_time = 0
@@ -51,8 +53,10 @@ while cam.isOpened():
 
     if current_time - last_trigger_time > cooldown:
         if slouch_detected:
-            pygame.mixer.music.load("doublechin.mp3")
+            pygame.mixer.music.load("omgbruh.mp3")
             pygame.mixer.music.play()
+            current_image = slouch_image
+            alert_timer_end = current_time + 2.0
             last_trigger_time = current_time
         elif hands_detected:
             chosen_sound, chosen_image = random.choice(goofyaah_sounds)
