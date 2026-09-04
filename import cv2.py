@@ -4,8 +4,9 @@ import mediapipe as mp
 import random
 import time
 
-pygame.mixer.init()
 
+pygame.mixer.init()
+pygame.mixer.music.load("doublechin.mp3")
 goofyaah_sounds = [
     ("67.mp3", cv2.resize(cv2.imread("67.jpeg"), (220, 220))),
     ("faah.mp3", cv2.resize(cv2.imread("sadge.jpeg"), (220, 220))),
@@ -19,7 +20,7 @@ hands = hand_detect.Hands(max_num_hands=2, min_detection_confidence=0.7)
 pose = mp.solutions.pose
 mp_pose = pose.Pose(min_detection_confidence=0.6, min_tracking_confidence=0.6)
 baseline_nose_y = None
-slouch_threshold = 60
+slouch_threshold = 35
 calibration_end_time = time.time() + 3
 
 last_trigger_time = 0
@@ -38,7 +39,6 @@ while cam.isOpened():
     pose_results = mp_pose.process(rgbframe)
     results = hands.process(rgbframe)
     current_time = time.time()
-    
     slouch_detected = False
     if pose_results.pose_landmarks:
         nose_y = int(pose_results.pose_landmarks.landmark[0].y * h)
@@ -48,19 +48,20 @@ while cam.isOpened():
             slouch_detected = True
 
     hands_detected = results.multi_hand_landmarks is not None
-    violation = hands_detected or slouch_detected
 
-    if violation and (current_time - last_trigger_time > cooldown):
-        chosen_sound, chosen_image = random.choice(goofyaah_sounds)
-        try:
+    if current_time - last_trigger_time > cooldown:
+        if slouch_detected:
+            pygame.mixer.music.load("doublechin.mp3")
+            pygame.mixer.music.play()
+            last_trigger_time = current_time
+        elif hands_detected:
+            chosen_sound, chosen_image = random.choice(goofyaah_sounds)
             pygame.mixer.music.load(chosen_sound)
             pygame.mixer.music.play()
-        except Exception as e:
-            print("Audio error:", e)
 
-        current_image = chosen_image
-        alert_timer_end = current_time + 2.0
-        last_trigger_time = current_time
+            current_image = chosen_image
+            alert_timer_end = current_time + 2.0
+            last_trigger_time = current_time
 
     if current_time < alert_timer_end and current_image is not None:
         frame[30:250, -250:-30] = current_image
@@ -77,8 +78,9 @@ while cam.isOpened():
         )
 
     cv2.imshow("im going to the HR SIMULATOR", frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey(1) & 0xFF == ord("q"):
         break
+
 
 cam.release()
 cv2.destroyAllWindows()
