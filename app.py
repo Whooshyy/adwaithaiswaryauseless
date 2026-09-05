@@ -22,7 +22,7 @@ hands = hand_detect.Hands(max_num_hands=2, min_detection_confidence=0.7)
 pose = mp.solutions.pose
 mp_pose = pose.Pose(min_detection_confidence=0.6, min_tracking_confidence=0.6)
 baseline_nose_y = None
-slouch_threshold = 9
+slouch_threshold = 10
 calibration_end_time = time.time() + 3
 
 last_trigger_time = 0
